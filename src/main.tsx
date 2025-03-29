@@ -45,3 +45,17 @@ const result = await typedApi.apis.TransactionPaymentCallApi.query_call_info(
 );
 
 console.log(result);
+
+const sudoAccount = await typedApi.query.Sudo.Key.getValue();
+if (sudoAccount !== undefined) {
+  console.log("Sudo acc:", sudoAccount.toString());
+} else {
+  console.log("Sudo acc is undefined");
+}
+
+if (sudoAccount !== undefined) {
+  const sudoAccountInfo = await typedApi.query.System.Account.getValue(sudoAccount);
+  console.log("Sudo account balance:", sudoAccountInfo.data.free.toString());
+} else {
+  console.log("Sudo account is undefined, cannot fetch account info.");
+}
