@@ -67,3 +67,11 @@ const anyProxies = proxyEntries.flatMap((entry) => entry.value[0].filter((v) => 
 const anyProxiesUnique = new Set(anyProxies)
 
 console.log("Any Proxies:", anyProxiesUnique);
+
+const maxProxies = typedApi.constants.Proxy.MaxProxies()
+
+const maxProxiesValue = await maxProxies;
+const thirdResult = proxyEntries.some((entry) => entry.value[0].length >= maxProxiesValue);
+
+console.log("Third result:", thirdResult);
+
