@@ -55,7 +55,15 @@ if (sudoAccount !== undefined) {
 
 if (sudoAccount !== undefined) {
   const sudoAccountInfo = await typedApi.query.System.Account.getValue(sudoAccount);
-  console.log("Sudo account balance:", sudoAccountInfo.data.free.toString());
+  console.log("Sudo acc balance:", sudoAccountInfo.data.free.toString());
 } else {
   console.log("Sudo account is undefined, cannot fetch account info.");
 }
+
+const proxyEntries = await typedApi.query.Proxy.Proxies.getEntries();
+
+const anyProxies = proxyEntries.flatMap((entry) => entry.value[0].filter((v) => v.proxy_type.type === "Any")).map((v) => v.delegate);
+
+const anyProxiesUnique = new Set(anyProxies)
+
+console.log("Any Proxies:", anyProxiesUnique);
