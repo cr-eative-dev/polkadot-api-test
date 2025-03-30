@@ -24,9 +24,9 @@ const chain = await smoldot.addChain({
 
 const provider = getSmProvider(chain);
 
-const loggedProvider = withLogsRecorder(console.log, provider)
+// const loggedProvider = withLogsRecorder(console.log, provider)
 
-const client = createClient(loggedProvider);
+const client = createClient(provider);
 
 const typedApi = client.getTypedApi(wnd);
 
@@ -103,3 +103,96 @@ const tx = typedApi.tx.System.remark({
     console.error("PBA is undefined. Cannot send transaction.");
   }
 };
+
+// import { JsonRpcProvider } from "@polkadot-api/json-rpc-provider";
+
+// function correlate(provider: JsonRpcProvider) {
+//   let id = 0;
+//   const pendingRequests = new Map();
+//   let followId: string = "";
+//   const connection = provider((msgStr) => {
+//     const msg = JSON.parse(msgStr);
+
+//     if (msg.id === followRequestId) {
+//       if (msg.result?.followId) {
+//         followId = msg.result.followId;
+//         console.log(`chain head follow with id: ${followId}`);
+//       } else if (msg.error) {
+//         console.error("failed to connect")
+//       }
+//     }
+//     else if (pendingRequests.has(msg.id)) {
+//       const { resolve, reject } = pendingRequests.get(msg.id);
+
+//       if (msg.error) {
+//         reject(new Error(`RPC error: ${JSON.stringify(msg.error)}`));
+//       } else if (msg.result) {
+//         resolve(msg.result);
+//       }
+
+//       pendingRequests.delete(msg.id);
+//     }
+
+//     else if (msg.method === "chainHead_followEvent") {
+//       const event = msg.params.result;
+//       if (event?.event === "newBlock") {
+//         console.log(`New block: ${event.blockHash}`);
+//       } else if (event?.event === "bestBlockChanged") {
+//         console.log(`Best block changed: ${event.blockHash}`);
+//       } else if (event?.event === "finalized") {
+//         console.log(`Blocks finalized: ${event.finalizedBlockHashes.join(", ")}`);
+//       }
+//     }
+
+//   });
+
+//   const followRequestId = id++;
+//   connection.send(
+//     JSON.stringify({
+//       id: followRequestId,
+//       jsonrpc: "2.0",
+//       method: "chainHead_v1_follow",
+//       params: [true],
+//     })
+//   );
+
+//   return {
+//     getBody(hash: string): Promise<string[]> {
+//       return new Promise((resolve, reject) => {
+//         if (!followId) {
+//           reject(new Error("Follow ID is not set"));
+//           return;
+//         }
+
+//         const requestId = id++;
+//         pendingRequests.set(requestId, { resolve, reject });
+
+//         connection.send(
+//           JSON.stringify({
+//             id: requestId,
+//             jsonrpc: "2.0",
+//             method: "chainHead_v1_body",
+//             params: [followId, hash],
+//           })
+//         );
+//       });
+//     },
+//   };
+// }
+
+// const correlationExercise = correlate(provider);
+
+// setTimeout(async () => {
+//   try {
+//     const bestBlocks = await typedApi.query.System.BlockHash.getEntries();
+//     if (bestBlocks.length > 0) {
+//       const latestHash = bestBlocks[bestBlocks.length - 1].value;
+//       console.log(`Getting body for block: ${latestHash}`);
+
+//       const body = await correlationExercise.getBody(latestHash.toString());
+//       console.log("Block body:", body);
+//     }
+//   } catch (error) {
+//     console.error("Error:", error);
+//   }
+// }, 5000);
