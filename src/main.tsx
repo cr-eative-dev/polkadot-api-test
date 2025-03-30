@@ -41,14 +41,14 @@ console.log(typedApi.constants.System.SS58Prefix(token));
 //   remark: Binary.fromText("Hello World")
 // })
 
-const encodedData = await tx.getEncodedData();
+// const encodedData = await tx.getEncodedData();
 
-const result = await typedApi.apis.TransactionPaymentCallApi.query_call_info(
-  tx.decodedCall,
-  0
-);
+// const result = await typedApi.apis.TransactionPaymentCallApi.query_call_info(
+//   tx.decodedCall,
+//   0
+// );
 
-console.log(result);
+// console.log(result);
 
 const sudoAccount = await typedApi.query.Sudo.Key.getValue();
 if (sudoAccount !== undefined) {
