@@ -89,6 +89,10 @@ const tx = typedApi.tx.System.remark({
   remark: Binary.fromText("Hello World")
 });
 
+// const sudoTx = typedApi.tx.Sudo.sudo({
+//   call: tx.decodedCall,
+// });
+
 (window as any).sendTx = async () => {
   if (PBA) {
     tx.signSubmitAndWatch(PBA.polkadotSigner).subscribe((evt) => { console.log("tx Event:", evt) });
