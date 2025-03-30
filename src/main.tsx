@@ -7,6 +7,7 @@ import { createClient, Binary } from 'polkadot-api'
 import { getSmProvider } from 'polkadot-api/sm-provider'
 import { chainSpec } from 'polkadot-api/chains/westend2';
 import { start } from 'polkadot-api/smoldot';
+import { getInjectedExtensions, connectInjectedExtension } from 'polkadot-api/pjs-signer'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -26,52 +27,72 @@ const client = createClient(provider);
 
 const typedApi = client.getTypedApi(wnd);
 
-const token = await typedApi.compatibilityToken;
+// const token = await typedApi.compatibilityToken;
 
-const account = await typedApi.query.System.Account.getValue("5FxrUu1PUugUYs6HQ83bDswjGLyHYTEzm7yqmrkKVPaYe71Y")
+// const account = await typedApi.query.System.Account.getValue("5FxrUu1PUugUYs6HQ83bDswjGLyHYTEzm7yqmrkKVPaYe71Y")
 
 
-console.log(typedApi.constants.System.SS58Prefix(token));
+// console.log(typedApi.constants.System.SS58Prefix(token));
+
+// const tx = typedApi.tx.System.remark({
+//   remark: Binary.fromText("Hello World")
+// })
+
+// const encodedData = await tx.getEncodedData();
+
+// const result = await typedApi.apis.TransactionPaymentCallApi.query_call_info(
+//   tx.decodedCall,
+//   0
+// );
+
+// console.log(result);
+
+// const sudoAccount = await typedApi.query.Sudo.Key.getValue();
+// if (sudoAccount !== undefined) {
+//   console.log("Sudo acc:", sudoAccount.toString());
+// } else {
+//   console.log("Sudo acc is undefined");
+// }
+
+// if (sudoAccount !== undefined) {
+//   const sudoAccountInfo = await typedApi.query.System.Account.getValue(sudoAccount);
+//   console.log("Sudo acc balance:", sudoAccountInfo.data.free.toString());
+// } else {
+//   console.log("Sudo account is undefined, cannot fetch account info.");
+// }
+
+// const proxyEntries = await typedApi.query.Proxy.Proxies.getEntries();
+
+// const anyProxies = proxyEntries.flatMap((entry) => entry.value[0].filter((v) => v.proxy_type.type === "Any")).map((v) => v.delegate);
+
+// const anyProxiesUnique = new Set(anyProxies)
+
+// console.log("Any Proxies:", anyProxiesUnique);
+
+// const maxProxies = typedApi.constants.Proxy.MaxProxies()
+
+// const maxProxiesValue = await maxProxies;
+// const thirdResult = proxyEntries.some((entry) => entry.value[0].length >= maxProxiesValue);
+
+// console.log("Third result:", thirdResult);
+
+const extensionId = getInjectedExtensions()[0];
+const extension = await connectInjectedExtension(extensionId);
+console.log("Extension:", extension);
+
+const accounts = extension.getAccounts();
+console.log("Accounts:", accounts);
+
+const PBA = accounts.find((account) => account.name === "PBA");
 
 const tx = typedApi.tx.System.remark({
   remark: Binary.fromText("Hello World")
-})
+});
 
-const encodedData = await tx.getEncodedData();
-
-const result = await typedApi.apis.TransactionPaymentCallApi.query_call_info(
-  tx.decodedCall,
-  0
-);
-
-console.log(result);
-
-const sudoAccount = await typedApi.query.Sudo.Key.getValue();
-if (sudoAccount !== undefined) {
-  console.log("Sudo acc:", sudoAccount.toString());
-} else {
-  console.log("Sudo acc is undefined");
-}
-
-if (sudoAccount !== undefined) {
-  const sudoAccountInfo = await typedApi.query.System.Account.getValue(sudoAccount);
-  console.log("Sudo acc balance:", sudoAccountInfo.data.free.toString());
-} else {
-  console.log("Sudo account is undefined, cannot fetch account info.");
-}
-
-const proxyEntries = await typedApi.query.Proxy.Proxies.getEntries();
-
-const anyProxies = proxyEntries.flatMap((entry) => entry.value[0].filter((v) => v.proxy_type.type === "Any")).map((v) => v.delegate);
-
-const anyProxiesUnique = new Set(anyProxies)
-
-console.log("Any Proxies:", anyProxiesUnique);
-
-const maxProxies = typedApi.constants.Proxy.MaxProxies()
-
-const maxProxiesValue = await maxProxies;
-const thirdResult = proxyEntries.some((entry) => entry.value[0].length >= maxProxiesValue);
-
-console.log("Third result:", thirdResult);
-
+(window as any).sendTx = async () => {
+  if (PBA) {
+    tx.signSubmitAndWatch(PBA.polkadotSigner).subscribe((evt) => { console.log("tx Event:", evt) });
+  } else {
+    console.error("PBA is undefined. Cannot send transaction.");
+  }
+};
