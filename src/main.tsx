@@ -8,7 +8,7 @@ import { getSmProvider } from 'polkadot-api/sm-provider'
 import { chainSpec } from 'polkadot-api/chains/westend2';
 import { start } from 'polkadot-api/smoldot';
 import { getInjectedExtensions, connectInjectedExtension } from 'polkadot-api/pjs-signer'
-import { withLogsRecorder } from 'polkadot-api/logs-provider'
+import { JsonRpcProvider } from '@polkadot-api/json-rpc-provider'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -23,6 +23,27 @@ const chain = await smoldot.addChain({
 })
 
 const provider = getSmProvider(chain);
+
+export function withLogsRecorder(
+  persistLog: (msg: string) => void,
+  // Provider wrapped
+  provider: JsonRpcProvider
+): JsonRpcProvider {
+  return (onMessage) => {
+    const connection = provider(onMessage);
+
+    return {
+      disconnect() {
+        persistLog("Disconnecting provider");
+        connection.disconnect();
+      },
+      send(message) {
+        persistLog(`Sending message: ${JSON.stringify(message)}`);
+        connection.send(message);
+      },
+    };
+  };
+}
 
 // const loggedProvider = withLogsRecorder(console.log, provider)
 
